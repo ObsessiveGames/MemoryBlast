@@ -10,7 +10,7 @@ public class Constants {
 
     // UI
     public const string mainMenuUIScene = "MainMenuUI";
-    public const string gameUIScene = "GameUIScene";
+    public const string gameUIScene = "GameUI";
     #endregion
 
     #region Resources
