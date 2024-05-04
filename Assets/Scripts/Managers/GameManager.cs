@@ -11,6 +11,7 @@ public class GameManager : Manager {
     
     private CardController previousCardController;
     private SceneLoadingManager sceneLoadingManager => appManager.sceneLoadingManager;
+    private DataManager dataManager => appManager.dataManager;
 
     public override void Setup(AppManager appManager) {
         base.Setup(appManager);
@@ -19,8 +20,7 @@ public class GameManager : Manager {
 
     private void OnDestroy() {
         StopListeningToEvent<CardFlippedEvent>(OnCardFlippedEvent);
-        // TODO:
-        // Save data to dataManager.
+        dataManager.SaveMatchScore(matchScore);
     }
 
     private void OnCardFlippedEvent(object sender, EventArgs e) {

@@ -50,6 +50,11 @@ public class DataManager : Manager {
         }
     }
 
+    public void SaveMatchScore(int matchScore) {
+        data.SetMatchScore(matchScore);
+        SaveGameAsync(data);
+    }
+
     public PlayerData LoadGame() {
         if (File.Exists(filePath)) {
             string json = File.ReadAllText(filePath);
