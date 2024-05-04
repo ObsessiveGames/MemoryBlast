@@ -45,4 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eventManagerPrefab: {fileID: 0}
-  <maxTurns>k__BackingField: 10
+  <maxTurns>k__BackingField: 500
