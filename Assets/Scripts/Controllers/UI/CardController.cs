@@ -5,32 +5,36 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class CardController : BaseBehaviour {
+    [field: SerializeField] public Image cardFront { get; private set; }
+
     [SerializeField] private bool cardBackIsActive;
     [SerializeField] private float flipDuration;
     [SerializeField] private Button cardButton;
-    [SerializeField] private GameObject cardFront;
     [SerializeField] private GameObject cardBack;
 
     private bool isFlipping;
 
-    public override void Setup(AppManager appManager) {
+    public void Setup(AppManager appManager, CardDataSO.CardData cardData) {
         base.Setup(appManager);
+        cardFront.sprite = cardData.frontSprite;
         cardBackIsActive = true;
         cardButton.onClick.AddListener(OnCardButtonPressed);
+        StartListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
     }
 
     private void OnDestroy() {
         cardButton.onClick.RemoveListener(OnCardButtonPressed);
+        StopListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
     }
 
-    private void StartFlip() {
+    public void StartFlip(bool isReset = false) {
         if (!isFlipping) {
             isFlipping = true;
-            StartCoroutine(FlipCard());
+            StartCoroutine(FlipCard(isReset));
         }
     }
 
-    private IEnumerator FlipCard() {
+    private IEnumerator FlipCard(bool isReset) {
         float elapsedTime = 0f;
         float halfDuration = flipDuration / 2f;
         Quaternion startRotation = cardBackIsActive ? cardBack.transform.rotation : cardFront.transform.rotation;
@@ -60,15 +64,25 @@ public class CardController : BaseBehaviour {
         }
 
         isFlipping = false;
+        if (!isReset) TriggerEvent<CardFlippedEvent>(new CardFlippedEvent(this));
     }
 
     private void Flip() {
         cardBackIsActive = !cardBackIsActive;
         cardBack.SetActive(cardBackIsActive);
-        cardFront.SetActive(!cardBackIsActive);
+        cardFront.gameObject.SetActive(!cardBackIsActive);
     }
 
     private void OnCardButtonPressed() {
-        StartFlip();
+        if (!cardFront.gameObject.activeSelf) StartFlip();
+    }
+
+    private void OnCardMatchedEvent(object sender, EventArgs e) {
+        CardMatchedEvent cardMatchedEvent = e as CardMatchedEvent;
+        if (cardMatchedEvent.cardController == this) {
+            // This card matched.
+            // Scale in and out and pop.
+            cardButton.interactable = false;
+        }
     }
 }

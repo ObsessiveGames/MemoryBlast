@@ -47,4 +47,5 @@ MonoBehaviour:
   eventManagerPrefab: {fileID: 0}
   <data>k__BackingField:
     <matchesScore>k__BackingField: 0
+  <cards>k__BackingField: {fileID: 11400000, guid: 919e123e99764c343af6bd47f0c0a0a4, type: 2}
   saveTimer: 15

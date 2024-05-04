@@ -5,7 +5,9 @@ using UnityEngine;
 
 [Serializable]
 public class PlayerData {
-    [field: SerializeField] public int matchesScore { get; private set; }
+    [field: SerializeField] public int matchScore { get; private set; }
+    [field: SerializeField] public List<int> gameSaveIndex { get; private set; } = new List<int>();
 
-    public void IncrementMatchesScore(int amount) => matchesScore += amount;
+    public void SetMatchScore(int amount) => matchScore = amount;
+    public void AddIndexToGameSaveList(int randomIndex) => gameSaveIndex.Add(randomIndex);
 }

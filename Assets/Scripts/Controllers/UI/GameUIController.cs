@@ -15,18 +15,26 @@ public class GameUIController : BaseBehaviour {
     [SerializeField] private Button homeButton;
     [SerializeField] private RectTransform containerRect;
 
+    private CardDataSO availableCards;
     private SceneLoadingManager sceneLoadingManager => appManager.sceneLoadingManager;
+    private DataManager dataManager => appManager.dataManager;
+    private GameManager gameManager => appManager.gameManager;
 
     public override void Setup(AppManager appManager) {
         base.Setup(appManager);
+        availableCards = dataManager.cards;
         matchesText.SetText($"Matches:\n0");
         turnsText.SetText($"Turns:\n0");
         homeButton.onClick.AddListener(OnHomeButtonPressed);
         GenerateCardLayout();
+        StartListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
+        StartListeningToEvent<CardMatchTurnEndedEvent>(OnCardMatchTurnEndedEvent);
     }
 
     private void OnDestroy() {
         homeButton.onClick.RemoveListener(OnHomeButtonPressed);
+        StopListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
+        StopListeningToEvent<CardMatchTurnEndedEvent>(OnCardMatchTurnEndedEvent);
     }
 
     private void OnHomeButtonPressed() {
@@ -46,11 +54,34 @@ public class GameUIController : BaseBehaviour {
         float cardWidth = availableWidth / columns;
         float cardHeight = availableHeight / rows;
 
+        int totalPositions = rows * columns;
+        int maxIndex = totalPositions / 2;
+
+        List<int> availableCardIndices = new List<int>();
+        List<int> duplicatedAvailableCardIndices = new List<int>();
+
+        for (int i = 0; i < maxIndex; i++) {
+            availableCardIndices.Add(i);
+            duplicatedAvailableCardIndices.Add(i);
+        }
+
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                // Instantiate card object
+                int randomIndex = 0;
+                if (duplicatedAvailableCardIndices.Count >= availableCardIndices.Count) {
+                    int duplicateIndex = UnityEngine.Random.Range(0, duplicatedAvailableCardIndices.Count);
+                    randomIndex = duplicatedAvailableCardIndices[duplicateIndex];
+                    duplicatedAvailableCardIndices.RemoveAt(duplicateIndex);
+                } else {
+                    int availableIndex = UnityEngine.Random.Range(0, availableCardIndices.Count);
+                    randomIndex = availableCardIndices[availableIndex];
+                    availableCardIndices.RemoveAt(availableIndex);
+                }
+
+                CardDataSO.CardData selectedCard = availableCards.cardDataList[randomIndex];
+                dataManager.GameSaveAddIndex(randomIndex);
                 CardController card = Instantiate(cardControllerPrefab, Vector3.zero, Quaternion.identity);
-                card.Setup(appManager);
+                card.Setup(appManager, selectedCard);
                 card.transform.SetParent(containerRect.transform, false); // Set as child of container
                 RectTransform cardRect = card.GetComponent<RectTransform>();
 
@@ -61,5 +92,13 @@ public class GameUIController : BaseBehaviour {
                 cardRect.anchoredPosition = new Vector2(posX, posY);
             }
         }
+    }
+
+    private void OnCardMatchedEvent(object sender, EventArgs e) {
+        matchesText.SetText($"Matches:\n{gameManager.matchScore}");
+    }
+
+    private void OnCardMatchTurnEndedEvent(object sender, EventArgs e) {
+        turnsText.SetText($"Turns:\n{gameManager.matchTurn}");
     }
 }

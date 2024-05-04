@@ -428,8 +428,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ae7596b98cbf5b40b761981cd0a2ea6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rows: 10
-  columns: 10
+  rows: 5
+  columns: 6
   spacing: 25
   cardControllerPrefab: {fileID: 6922617009134464783, guid: 5e2734a6102fef74ca0793cfcf18ffce, type: 3}
   matchesText: {fileID: 7023419936946509066}
