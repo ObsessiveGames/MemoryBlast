@@ -10,23 +10,31 @@ public class MainMenuUIController : BaseBehaviour {
     [SerializeField] private Button playButton;
 
     private SceneLoadingManager sceneLoadingManager => appManager.sceneLoadingManager;
+    private DataManager dataManager => appManager.dataManager;
 
     public override void Setup(AppManager appManager) {
         base.Setup(appManager);
+        if (dataManager.data.matchTurn > 0) {
+            continueButton.interactable = true;
+            continueButton.onClick.AddListener(OnContinueButtonPressed);
+        } else {
+            continueButton.interactable = false;
+        }
         playButton.onClick.AddListener(OnPlayButtonPressed);
-        continueButton.onClick.AddListener(OnContinueButtonPressed);
     }
 
     private void OnDestroy() {
         playButton.onClick.RemoveListener(OnPlayButtonPressed);
-        continueButton.onClick.RemoveListener(OnContinueButtonPressed);
+        if (continueButton.gameObject.activeSelf) continueButton.onClick.RemoveListener(OnContinueButtonPressed);
     }
 
     private void OnContinueButtonPressed() {
+        dataManager.IsPreviousGame(true);
         sceneLoadingManager.LoadSceneSingle(Constants.gameScene);
     }
 
     private void OnPlayButtonPressed() {
+        dataManager.IsPreviousGame(false);
         sceneLoadingManager.LoadSceneSingle(Constants.gameScene);
     }
 }

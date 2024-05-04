@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class CardController : BaseBehaviour {
+    public int cardIndex { get; private set; }
+
     [field: SerializeField] public Image cardFront { get; private set; }
 
     [SerializeField] private bool cardBackIsActive;
@@ -13,18 +15,33 @@ public class CardController : BaseBehaviour {
     [SerializeField] private GameObject cardBack;
 
     private bool isFlipping;
+    private bool wasClaimed;
 
     public void Setup(AppManager appManager, CardDataSO.CardData cardData) {
         base.Setup(appManager);
+        wasClaimed = false;
         cardFront.sprite = cardData.frontSprite;
+        cardIndex = cardData.cardIndex;
         cardBackIsActive = true;
         cardButton.onClick.AddListener(OnCardButtonPressed);
         StartListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
     }
 
+    public void SetupClaimed(CardDataSO.CardData cardData) {
+        wasClaimed = true;
+        cardFront.sprite = cardData.frontSprite;
+        cardIndex = cardData.cardIndex;
+        cardButton.interactable = false;
+        cardBack.SetActive(false);
+        cardFront.gameObject.SetActive(true);
+        cardFront.transform.localRotation = new Quaternion(0, 0, 0, 0);
+    }
+
     private void OnDestroy() {
-        cardButton.onClick.RemoveListener(OnCardButtonPressed);
-        StopListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
+        if (!wasClaimed) {
+            cardButton.onClick.RemoveListener(OnCardButtonPressed);
+            StopListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
+        }
     }
 
     public void StartFlip(bool isReset = false) {
@@ -82,8 +99,6 @@ public class CardController : BaseBehaviour {
         CardMatchedEvent cardMatchedEvent = e as CardMatchedEvent;
         if (cardMatchedEvent.cardController.cardFront.sprite == cardFront.sprite) {
             StartCoroutine(PlayMatchAnimation());
-            // This card matched.
-            // Scale in and out and pop.
             cardButton.interactable = false;
         }
     }

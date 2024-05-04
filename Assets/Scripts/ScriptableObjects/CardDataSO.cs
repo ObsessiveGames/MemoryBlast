@@ -9,6 +9,7 @@ public class CardDataSO : ScriptableObject {
 
     [Serializable]
     public class CardData {
+        public int cardIndex;
         public Sprite frontSprite;
     }
 }

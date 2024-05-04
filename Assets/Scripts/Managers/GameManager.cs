@@ -16,11 +16,15 @@ public class GameManager : Manager {
     public override void Setup(AppManager appManager) {
         base.Setup(appManager);
         StartListeningToEvent<CardFlippedEvent>(OnCardFlippedEvent);
+        if (dataManager.isPreviousGame) {
+            matchScore = dataManager.data.matchScore;
+            matchTurn = dataManager.data.matchTurn;
+        }
     }
 
     private void OnDestroy() {
         StopListeningToEvent<CardFlippedEvent>(OnCardFlippedEvent);
-        dataManager.SaveMatchScore(matchScore);
+        dataManager.SaveMatchData(matchScore, matchTurn);
     }
 
     private void OnCardFlippedEvent(object sender, EventArgs e) {
@@ -31,6 +35,7 @@ public class GameManager : Manager {
             if (previousCardController.cardFront.sprite == cardFlippedEvent.cardController.cardFront.sprite) {
                 matchScore++;
                 TriggerEvent<CardMatchedEvent>(new CardMatchedEvent(cardFlippedEvent.cardController));
+                dataManager.AddCardsMatchedIndex(previousCardController.cardIndex);
                 GlobalAudioPlayer.PlaySFX(Constants.sfxMatched);
             } else {
                 GlobalAudioPlayer.PlaySFX(Constants.sfxMismatched);

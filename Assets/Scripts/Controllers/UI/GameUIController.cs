@@ -23,10 +23,11 @@ public class GameUIController : BaseBehaviour {
     public override void Setup(AppManager appManager) {
         base.Setup(appManager);
         availableCards = dataManager.cards;
-        matchesText.SetText($"Matches:\n0");
-        turnsText.SetText($"Turns:\n0/{gameManager.maxTurns}");
+        matchesText.SetText($"Matches:\n{gameManager.matchScore}");
+        turnsText.SetText($"Turns:\n{gameManager.matchTurn}/{gameManager.maxTurns}");
         homeButton.onClick.AddListener(OnHomeButtonPressed);
-        GenerateCardLayout();
+        if (dataManager.isPreviousGame) LoadPreviousCardLayout();
+        else GenerateCardLayout();
         StartListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
         StartListeningToEvent<CardMatchTurnEndedEvent>(OnCardMatchTurnEndedEvent);
     }
@@ -65,6 +66,8 @@ public class GameUIController : BaseBehaviour {
             duplicatedAvailableCardIndices.Add(i);
         }
 
+        dataManager.ClearSaveAddIndex();
+
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
                 int randomIndex = 0;
@@ -82,6 +85,56 @@ public class GameUIController : BaseBehaviour {
                 dataManager.GameSaveAddIndex(randomIndex);
                 CardController card = Instantiate(cardControllerPrefab, Vector3.zero, Quaternion.identity);
                 card.Setup(appManager, selectedCard);
+                card.transform.SetParent(containerRect.transform, false); // Set as child of container
+                RectTransform cardRect = card.GetComponent<RectTransform>();
+
+                // Set size and position of the card
+                cardRect.sizeDelta = new Vector2(cardWidth, cardHeight);
+                float posX = col * (cardWidth + spacing);
+                float posY = -row * (cardHeight + spacing); // Negative y to account for Unity's inverted UI coordinate system
+                cardRect.anchoredPosition = new Vector2(posX, posY);
+            }
+        }
+    }
+
+    private void LoadPreviousCardLayout() {
+        // Calculate total width and height of the card layout
+        float totalWidth = containerRect.rect.width;
+        float totalHeight = containerRect.rect.height;
+
+        // Calculate available width and height for each card after considering spacing
+        float availableWidth = totalWidth - (columns - 1) * spacing;
+        float availableHeight = totalHeight - (rows - 1) * spacing;
+
+        // Calculate size of each card based on the available space and the number of rows and columns
+        float cardWidth = availableWidth / columns;
+        float cardHeight = availableHeight / rows;
+
+        int totalPositions = rows * columns;
+        int maxIndex = totalPositions / 2;
+
+        List<int> availableCardIndices = new List<int>();
+        List<int> duplicatedAvailableCardIndices = new List<int>();
+
+        for (int i = 0; i < maxIndex; i++) {
+            availableCardIndices.Add(i);
+            duplicatedAvailableCardIndices.Add(i);
+        }
+
+        int indexCounter = 0;
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                List<int> gameSaveIndex = dataManager.data.gameSaveIndex;
+                int cardIndex = gameSaveIndex[indexCounter];
+                CardDataSO.CardData selectedCard = availableCards.cardDataList[cardIndex];
+                indexCounter++;
+                CardController card = Instantiate(cardControllerPrefab, Vector3.zero, Quaternion.identity);
+                if (dataManager.data.matchedIndex.Contains(cardIndex)) {
+                    card.SetupClaimed(selectedCard);
+                } else {
+                    card.Setup(appManager, selectedCard);
+                }
+                
                 card.transform.SetParent(containerRect.transform, false); // Set as child of container
                 RectTransform cardRect = card.GetComponent<RectTransform>();
 

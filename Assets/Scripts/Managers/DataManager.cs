@@ -5,6 +5,8 @@ using System.IO;
 using UnityEngine;
 
 public class DataManager : Manager {
+    public bool isPreviousGame { get; private set; }
+
     [field: SerializeField] public PlayerData data { get; private set; }
     [field: SerializeField] public CardDataSO cards { get; private set; }
 
@@ -37,7 +39,10 @@ public class DataManager : Manager {
         }
     }
 
+    public void AddCardsMatchedIndex(int index) => data.AddIndexToMatchedList(index);
     public void GameSaveAddIndex(int randomIndex) => data.AddIndexToGameSaveList(randomIndex);
+    public void IsPreviousGame(bool value) => isPreviousGame = value;
+    public void ClearSaveAddIndex() => data.ClearGameSaveIndexList();
     public string SerializeSaveData(PlayerData data) => JsonUtility.ToJson(data);
 
     public async void SaveGameAsync(PlayerData data) {
@@ -50,8 +55,9 @@ public class DataManager : Manager {
         }
     }
 
-    public void SaveMatchScore(int matchScore) {
+    public void SaveMatchData(int matchScore, int matchTurn) {
         data.SetMatchScore(matchScore);
+        data.SetMatchTurn(matchTurn);
         SaveGameAsync(data);
     }
 
