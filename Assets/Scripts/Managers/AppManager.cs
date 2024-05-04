@@ -63,7 +63,6 @@ public class AppManager : Manager {
 
     private void SetupGameManager() {
         gameManager = Instantiate(gameManagerPrefab);
-        DontDestroyOnLoad(gameManager);
         gameManager.Setup(this);
     }
 

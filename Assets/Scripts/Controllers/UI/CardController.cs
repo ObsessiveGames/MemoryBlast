@@ -68,6 +68,7 @@ public class CardController : BaseBehaviour {
     }
 
     private void Flip() {
+        GlobalAudioPlayer.PlaySFX(Constants.sfxFlip);
         cardBackIsActive = !cardBackIsActive;
         cardBack.SetActive(cardBackIsActive);
         cardFront.gameObject.SetActive(!cardBackIsActive);

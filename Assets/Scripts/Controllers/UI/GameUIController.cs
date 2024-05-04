@@ -24,7 +24,7 @@ public class GameUIController : BaseBehaviour {
         base.Setup(appManager);
         availableCards = dataManager.cards;
         matchesText.SetText($"Matches:\n0");
-        turnsText.SetText($"Turns:\n0");
+        turnsText.SetText($"Turns:\n0/{gameManager.maxTurns}");
         homeButton.onClick.AddListener(OnHomeButtonPressed);
         GenerateCardLayout();
         StartListeningToEvent<CardMatchedEvent>(OnCardMatchedEvent);
@@ -99,6 +99,6 @@ public class GameUIController : BaseBehaviour {
     }
 
     private void OnCardMatchTurnEndedEvent(object sender, EventArgs e) {
-        turnsText.SetText($"Turns:\n{gameManager.matchTurn}");
+        turnsText.SetText($"Turns:\n{gameManager.matchTurn}/{gameManager.maxTurns}");
     }
 }
